@@ -1,272 +1,165 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="dark">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Python "ăn liền"</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python "Ăn liền"</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script>hljs.highlightAll();</script>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-6">
+  <div class="max-w-2xl mx-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-3xl font-bold text-blue-600 dark:text-blue-300">Tra cứu mẫu Code Python "Ăn liền"</h1>
+      <button onclick="toggleDarkMode()" class="text-sm px-3 py-1 border rounded dark:border-gray-600">
+        <!-- Sun (light mode) -->
+        <svg id="sunIcon" class="w-6 h-6 hidden dark:block" viewBox="0 0 24 24" fill="#FFFF00" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 18a6 6 0 100-12 6 6 0 000 12zm0 2.5a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1a.75.75 0 01.75-.75zm0-17a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1A.75.75 0 0112 3.5zM4.22 5.47a.75.75 0 011.06 0l.71.7a.75.75 0 11-1.06 1.06l-.7-.71a.75.75 0 010-1.06zm12.73-.36a.75.75 0 011.06 1.06l-.7.71a.75.75 0 11-1.06-1.06l.7-.71zm2.55 6.39a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1a.75.75 0 01.75-.75zM4.5 12a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1A.75.75 0 014.5 12zm1.28 6.54a.75.75 0 010-1.06l.71-.7a.75.75 0 011.06 1.06l-.71.7a.75.75 0 01-1.06 0zm11.93-.7a.75.75 0 011.06 0l.7.71a.75.75 0 01-1.06 1.06l-.7-.71a.75.75 0 010-1.06z" />
+        </svg>
+
+        <!-- Moon (dark mode) -->
+        <svg id="moonIcon" class="w-6 h-6 block dark:hidden" viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 12.79A9 9 0 0112.21 3a7 7 0 000 14 9 9 0 008.79-4.21z" />
+        </svg>
+      </button>
+    </div>
+
+    <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Chào mừng! Hãy tìm kiếm các đoạn mã thường dùng trong phân
+      tích dữ liệu với Python. Gõ từ khoá, lọc theo chủ đề hoặc chọn các mẫu ngẫu nhiên gợi ý bên dưới.</p>
+
+    <input id="search" type="text" placeholder="Tìm kiếm ví dụ..." onkeyup="searchSnippets()"
+      class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded mb-4 shadow bg-white dark:bg-gray-800">
+
+    <div class="flex flex-wrap gap-2 mb-4" id="tag-filter"></div>
+
+    <div id="results" class="space-y-2"></div>
+    <div id="suggestions" class="space-y-2 mt-6"></div>
+  </div>
+
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-10">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl shadow-xl">
+      <h2 id="modal-title" class="text-2xl font-bold mb-2 text-blue-600 dark:text-blue-300"></h2>
+      <p id="modal-description" class="mb-4"></p>
+      <div id="modal-code" class="bg-gray-100 dark:bg-gray-900 p-4 rounded overflow-auto text-sm text-left"></div>
+      <div class="flex justify-between items-center mt-4">
+        <button onclick="copyCode()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">📋
+          Copy</button>
+        <button onclick="closeModal()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Đóng</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const codeSnippets = [
-    {
-        "title": "Biến và kiểu dữ liệu cơ bản",
-        "description": "Tạo biến kiểu số, chuỗi, danh sách, tuple, set và dictionary.",
-        "code": "a = 10                 # Kiểu số nguyên\nb = 3.14               # Kiểu số thực (float)\nc = 'Hello Python'     # Kiểu chuỗi\nd = [1, 2, 3]           # Danh sách (list)\ne = (4, 5, 6)           # Bộ giá trị (tuple)\nf = {1, 2, 3}           # Tập hợp (set)\ng = {'name': 'Alice', 'age': 25}  # Từ điển (dictionary)\n\n# In ra giá trị và kiểu dữ liệu\nprint(type(a), a)\nprint(type(b), b)\nprint(type(c), c)\nprint(type(d), d)\nprint(type(e), e)\nprint(type(f), f)\nprint(type(g), g)"
-    },
-    {
-        "title": "Câu lệnh rẽ nhánh if-elif-else",
-        "description": "Thực hiện điều kiện kiểm tra giá trị và in ra kết quả.",
-        "code": "x = int(input('Nhập một số: '))\n\nif x > 0:\n    print('Đây là một số dương')\nelif x < 0:\n    print('Đây là một số âm')\nelse:\n    print('Số bạn nhập là 0')"
-    },
-    {
-        "title": "Vòng lặp for",
-        "description": "Duyệt qua một danh sách và in từng phần tử.",
-        "code": "fruits = ['apple', 'banana', 'cherry']\n\n# Duyệt từng phần tử trong danh sách\nfor fruit in fruits:\n    print('Trái cây:', fruit)"
-    },
-    {
-        "title": "Vòng lặp while",
-        "description": "Vòng lặp while đơn giản với điều kiện dừng.",
-        "code": "n = 5\n\n# Vòng lặp chạy khi n > 0\nwhile n > 0:\n    print('Giá trị hiện tại của n:', n)\n    n -= 1  # Giảm giá trị của n mỗi lần lặp\n\nprint('Kết thúc vòng lặp')"
-    },
-    {
-        "title": "Hàm có tham số và giá trị trả về",
-        "description": "Hàm nhận vào hai số và trả về tổng của chúng.",
-        "code": "def tinh_tong(a, b):\n    # Hàm nhận vào hai tham số a và b\n    # Trả về kết quả cộng hai số\n    return a + b\n\n# Gọi hàm với 2 số cụ thể và in ra kết quả\nket_qua = tinh_tong(5, 3)\nprint('Tổng của 5 và 3 là:', ket_qua)"
-    },
-    {
-        "title": "Sử dụng danh sách (list)",
-        "description": "Tạo danh sách các số lũy thừa bằng một dòng.",
-        "code": "# Tạo danh sách các số từ 0 đến 9 sau đó bình phương chúng\nsquares = [x**2 for x in range(10)]\n\n# In ra danh sách các số bình phương\nprint('Danh sách các số bình phương từ 0 đến 9:', squares)"
-    },
-    {
-        "title": "Xử lý ngoại lệ với try-except",
-        "description": "Bắt lỗi chia cho 0 và hiển thị thông báo.",
-        "code": "try:\n    result = 10 / 0\nexcept ZeroDivisionError:\n    print('Không thể chia cho 0!')"
-    },
-    {
-        "title": "Đọc và ghi file",
-        "description": "Ghi nội dung vào file văn bản và sau đó đọc lại.",
-        "code": "with open('example.txt', 'w') as f:\n    f.write('Xin chào file!')\n\nwith open('example.txt', 'r') as f:\n    print(f.read())"
-    },
-    {
-        "title": "Lambda và hàm map",
-        "description": "Sử dụng lambda với map để tăng mỗi phần tử lên 1.",
-        "code": "numbers = [1, 2, 3, 4]\nresult = list(map(lambda x: x + 1, numbers))\nprint(result)"
-    },
-    {
-        "title": "Mẫu thiết kế (Decorator) đơn giản",
-        "description": "Định nghĩa mẫu thiết kế decorator để in lời chào trước khi gọi hàm.",
-        "code": "def chao_truoc(func):\n    def wrapper():\n        print('Xin chào!')\n        func()\n    return wrapper\n\n@chao_truoc\ndef xin_chao():\n    print('Đây là nội dung chính')\n\nxin_chao()"
-    },
-    {
-        "title": "Đọc file CSV với Pandas",
-        "description": "Sử dụng pandas để đọc dữ liệu từ file CSV và hiển thị 5 dòng đầu tiên.",
-        "code": "import pandas as pd\n\n# Đọc dữ liệu từ file CSV\nfile_path = 'du_lieu.csv'\ndf = pd.read_csv(file_path)\n\n# Hiển thị 5 dòng đầu tiên\nprint(df.head())"
-    },
-    {
-        "title": "Hiển thị thông tin tổng quan DataFrame",
-        "description": "Hiển thị thông tin các cột, kiểu dữ liệu và số lượng giá trị null.",
-        "code": "print(df.info())"
-    },
-    {
-        "title": "Thống kê mô tả dữ liệu số",
-        "description": "Thống kê như trung bình, min, max, độ lệch chuẩn cho dữ liệu dạng số.",
-        "code": "print(df.describe())"
-    },
-    {
-        "title": "Kiểm tra dữ liệu bị thiếu (null)",
-        "description": "Đếm số lượng giá trị null ở từng cột.",
-        "code": "print(df.isnull().sum())"
-    },
-    {
-        "title": "Loại bỏ dòng có dữ liệu thiếu",
-        "description": "Xóa toàn bộ các dòng chứa ít nhất một giá trị null.",
-        "code": "df_cleaned = df.dropna()\nprint(df_cleaned.shape)"
-    },
-    {
-        "title": "Thay thế giá trị thiếu bằng trung bình",
-        "description": "Thay thế các giá trị null trong cột số bằng giá trị trung bình của cột đó.",
-        "code": "df_filled = df.fillna(df.mean(numeric_only=True))"
-    },
-    {
-        "title": "Chuyển đổi kiểu dữ liệu",
-        "description": "Chuyển cột ngày từ chuỗi sang kiểu datetime.",
-        "code": "df['ngay'] = pd.to_datetime(df['ngay'])"
-    },
-    {
-        "title": "Vẽ biểu đồ line theo thời gian",
-        "description": "Vẽ biểu đồ xu hướng doanh số theo ngày.",
-        "code": "import matplotlib.pyplot as plt\n\nplt.plot(df['ngay'], df['doanh_so'])\nplt.xlabel('Ngày')\nplt.ylabel('Doanh số')\nplt.title('Doanh số theo ngày')\nplt.grid(True)\nplt.show()"
-    },
-    {
-        "title": "Vẽ biểu đồ phân phối (histogram)",
-        "description": "Hiển thị phân phối tuổi với biểu đồ histogram và đường KDE.",
-        "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsns.histplot(df['tuoi'], kde=True)\nplt.title('Phân phối độ tuổi')\nplt.xlabel('Tuổi')\nplt.ylabel('Tần suất')\nplt.show()"
-    },
-    {
-        "title": "Vẽ biểu đồ hộp (boxplot)",
-        "description": "Giúp phát hiện giá trị ngoại lệ trong biến số.",
-        "code": "sns.boxplot(x=df['doanh_so'])\nplt.title('Biểu đồ hộp doanh số')\nplt.show()"
-    },
-    {
-        "title": "Tính toán ma trận tương quan và vẽ heatmap",
-        "description": "Hiển thị mức độ tương quan giữa các biến số.",
-        "code": "corr = df.corr(numeric_only=True)\nsns.heatmap(corr, annot=True, cmap='coolwarm')\nplt.title('Ma trận tương quan')\nplt.show()"
-    },
-    {
-        "title": "Chuẩn hóa dữ liệu với StandardScaler",
-        "description": "Đưa dữ liệu về cùng thang đo để huấn luyện mô hình hiệu quả hơn.",
-        "code": "from sklearn.preprocessing import StandardScaler\n\nscaler = StandardScaler()\nX_scaled = scaler.fit_transform(df[['cot1', 'cot2']])"
-    },
-    {
-        "title": "Tách dữ liệu thành tập train và test",
-        "description": "Chia dữ liệu ra để huấn luyện và kiểm tra mô hình.",
-        "code": "from sklearn.model_selection import train_test_split\n\nX = df[['cot1', 'cot2']]\ny = df['nhan']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
-    },
-    {
-        "title": "Huấn luyện mô hình hồi quy tuyến tính",
-        "description": "Tạo và huấn luyện mô hình hồi quy tuyến tính với scikit-learn.",
-        "code": "from sklearn.linear_model import LinearRegression\n\nmodel = LinearRegression()\nmodel.fit(X_train, y_train)"
-    },
-    {
-        "title": "Dự đoán và tính MSE",
-        "description": "Dự đoán đầu ra và tính sai số bình phương trung bình.",
-        "code": "from sklearn.metrics import mean_squared_error\n\npred = model.predict(X_test)\nmse = mean_squared_error(y_test, pred)\nprint('MSE:', mse)"
-    },
-    {
-        "title": "Huấn luyện mô hình phân loại với Random Forest",
-        "description": "Xây dựng mô hình phân loại sử dụng rừng ngẫu nhiên.",
-        "code": "from sklearn.ensemble import RandomForestClassifier\n\nclf = RandomForestClassifier(n_estimators=100, random_state=42)\nclf.fit(X_train, y_train)"
-    },
-    {
-        "title": "Đánh giá mô hình phân loại",
-        "description": "Tính độ chính xác và in ma trận nhầm lẫn.",
-        "code": "from sklearn.metrics import accuracy_score, confusion_matrix\n\ny_pred = clf.predict(X_test)\nacc = accuracy_score(y_test, y_pred)\nprint('Accuracy:', acc)\nprint(confusion_matrix(y_test, y_pred))"
-    },
-    {
-        "title": "Tính tần suất giá trị với value_counts",
-        "description": "Xem số lần xuất hiện của mỗi giá trị trong một cột.",
-        "code": "print(df['nhan'].value_counts())"
-    },
-    {
-        "title": "Phân cụm với KMeans",
-        "description": "Phân nhóm dữ liệu thành các cụm dùng KMeans từ sklearn.",
-        "code": "from sklearn.cluster import KMeans\n\nkmeans = KMeans(n_clusters=3, random_state=42)\ndf['cluster'] = kmeans.fit_predict(df[['cot1', 'cot2']])\nprint(df.head())"
-    },
-    {
-        "title": "Giảm chiều dữ liệu với PCA",
-        "description": "Sử dụng PCA để giảm số chiều và trực quan hóa.",
-        "code": "from sklearn.decomposition import PCA\nimport matplotlib.pyplot as plt\n\npca = PCA(n_components=2)\nX_pca = pca.fit_transform(df[['cot1', 'cot2', 'cot3']])\nplt.scatter(X_pca[:, 0], X_pca[:, 1])\nplt.title('Biểu đồ sau PCA')\nplt.show()"
-    },
-    {
-        "title": "Chuẩn bị dữ liệu cho mô hình",
-        "description": "Chia dữ liệu thành đặc trưng số và nhãn phân loại.",
-        "code": "X = df.drop('label', axis=1)\ny = df['label']"
-    },
-    {
-        "title": "Huấn luyện mô hình Decision Tree",
-        "description": "Xây dựng mô hình cây quyết định và huấn luyện.",
-        "code": "from sklearn.tree import DecisionTreeClassifier\n\nmodel = DecisionTreeClassifier()\nmodel.fit(X_train, y_train)"
-    },
-    {
-        "title": "Trực quan hóa cây quyết định",
-        "description": "Hiển thị cây quyết định bằng matplotlib.",
-        "code": "from sklearn.tree import plot_tree\n\nplt.figure(figsize=(12, 8))\nplot_tree(model, filled=True, feature_names=X.columns, class_names=['0', '1'])\nplt.show()"
-    },
-    {
-        "title": "Tính F1-score và precision, recall",
-        "description": "Đánh giá mô hình phân loại với nhiều chỉ số.",
-        "code": "from sklearn.metrics import f1_score, precision_score, recall_score\n\nprint('F1:', f1_score(y_test, y_pred))\nprint('Precision:', precision_score(y_test, y_pred))\nprint('Recall:', recall_score(y_test, y_pred))"
-    },
-    {
-        "title": "Tạo ma trận nhầm lẫn (Confusion Matrix)",
-        "description": "Tạo hình ảnh trực quan cho ma trận nhầm lẫn.",
-        "code": "from sklearn.metrics import ConfusionMatrixDisplay\n\nConfusionMatrixDisplay.from_estimator(model, X_test, y_test)\nplt.title('Confusion Matrix')\nplt.show()"
-    },
-    {
-        "title": "Lựa chọn đặc trưng với SelectKBest",
-        "description": "Chọn các đặc trưng tốt nhất để huấn luyện mô hình.",
-        "code": "from sklearn.feature_selection import SelectKBest, f_classif\n\nselector = SelectKBest(score_func=f_classif, k=5)\nX_new = selector.fit_transform(X, y)\nprint('Hình dạng dữ liệu sau chọn:', X_new.shape)"
-    },
-    {
-        "title": "Xử lý dữ liệu mất cân bằng bằng SMOTE",
-        "description": "Tăng số lượng mẫu cho lớp thiểu số bằng kỹ thuật tổng hợp.",
-        "code": "from imblearn.over_sampling import SMOTE\n\nsmote = SMOTE()\nX_resampled, y_resampled = smote.fit_resample(X, y)\nprint('Sau SMOTE:', X_resampled.shape, y_resampled.shape)"
-    },
-    {
-        "title": "Vẽ biểu đồ Elbow cho KMeans",
-        "description": "Dùng phương pháp Elbow để xác định số lượng cụm tối ưu trong thuật toán KMeans bằng cách vẽ WCSS theo từng giá trị k.",
-        "code": "import matplotlib.pyplot as plt\nfrom sklearn.cluster import KMeans\nfrom sklearn.datasets import make_blobs\n\n# Tạo dữ liệu giả lập để demo\nX, _ = make_blobs(n_samples=300, centers=5, random_state=42)\n\nwcss = []  # Within-Cluster Sum of Squares\n\n# Thử các giá trị k từ 1 đến 10\nfor k in range(1, 11):\n    kmeans = KMeans(n_clusters=k, random_state=42)\n    kmeans.fit(X)\n    wcss.append(kmeans.inertia_)  # inertia_ chính là WCSS\n\n# Vẽ biểu đồ\nplt.plot(range(1, 11), wcss, marker='o')\nplt.title('Biểu đồ Elbow để chọn số lượng cụm K')\nplt.xlabel('Số cụm (k)')\nplt.ylabel('WCSS')\nplt.grid(True)\nplt.show()"
-    }
-    ];
+    let codeSnippets = [];
 
-    function shuffle(array) {
-      return array.sort(() => Math.random() - 0.5);
-    }
-
-    function showSuggestions() {
-      const suggestionBox = document.getElementById('suggestions');
-      const shuffled = shuffle([...codeSnippets]).slice(0, 5);
-      suggestionBox.innerHTML = '';
-      shuffled.forEach(snippet => {
-        const btn = document.createElement('button');
-        btn.textContent = snippet.title;
-        btn.className = 'block w-full text-left p-2 bg-white border rounded hover:bg-gray-100';
-        btn.onclick = () => showModal(snippet);
-        suggestionBox.appendChild(btn);
+    fetch('https://script.google.com/macros/s/AKfycbyTWFX_-uy5ZRVYe_Er41EBIw2OHCkhinPkeH9ej2XVicJaBbTgsmIJHaCynHyLjA7p/exec') 
+      .then(res => res.json())
+      .then(data => {
+        codeSnippets = data;
+        fuse.setCollection(codeSnippets);
+        renderTags();
+        showSuggestions();
       });
+    const fuse = new Fuse([], {
+      keys: ['title', 'description', 'tags'],
+      threshold: 0.4
+    });
+
+    function renderTags() {
+      const tagSet = new Set(codeSnippets.flatMap(s => s.tags));
+      const container = document.getElementById('tag-filter');
+      tagSet.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.textContent = `#${tag}`;
+        btn.className = 'px-2 py-1 text-sm border rounded hover:bg-blue-100 dark:hover:bg-blue-700';
+        btn.onclick = () => filterByTag(tag);
+        container.appendChild(btn);
+      });
+    }
+
+    function filterByTag(tag) {
+      const resultContainer = document.getElementById('results');
+      resultContainer.innerHTML = '';
+      const filtered = codeSnippets.filter(snippet => snippet.tags.includes(tag));
+      filtered.forEach(snippet => createResultButton(snippet, resultContainer));
     }
 
     function searchSnippets() {
-      const input = document.getElementById('search').value.toLowerCase();
-      const results = codeSnippets.filter(snippet => snippet.title.toLowerCase().includes(input));
+      const input = document.getElementById('search').value.trim();
+      const results = input ? fuse.search(input).map(r => r.item) : [];
       const resultContainer = document.getElementById('results');
       resultContainer.innerHTML = '';
-      results.forEach(snippet => {
-        const btn = document.createElement('button');
-        btn.textContent = snippet.title;
-        btn.className = 'block w-full text-left p-2 hover:bg-gray-200 rounded';
-        btn.onclick = () => showModal(snippet);
-        resultContainer.appendChild(btn);
-      });
+      results.forEach(snippet => createResultButton(snippet, resultContainer));
+    }
+
+    function createResultButton(snippet, container) {
+      const btn = document.createElement('button');
+      btn.textContent = snippet.title;
+      btn.className = 'block w-full text-left p-2 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded';
+      btn.onclick = () => showModal(snippet);
+      container.appendChild(btn);
     }
 
     function showModal(snippet) {
       document.getElementById('modal-title').textContent = snippet.title;
       document.getElementById('modal-description').textContent = snippet.description;
+
       const codeBlock = document.getElementById('modal-code');
-      codeBlock.innerHTML = `<pre><code class="language-python">${snippet.code}</code></pre>`;
-      hljs.highlightAll();
+      const pre = document.createElement('pre');
+      const codeEl = document.createElement('code');
+      codeEl.className = 'language-python';
+
+      // 🔧 Sửa lỗi: thay \\n -> \n
+      const cleanCode = snippet.code.replace(/\\n/g, "\n");
+      codeEl.textContent = cleanCode;
+
+      pre.appendChild(codeEl);
+      codeBlock.innerHTML = '';
+      codeBlock.appendChild(pre);
+
+      hljs.highlightElement(codeEl);
       document.getElementById('modal').classList.remove('hidden');
+      localStorage.setItem('lastViewed', snippet.title);
     }
 
     function closeModal() {
       document.getElementById('modal').classList.add('hidden');
     }
 
-    window.onload = showSuggestions;
-  </script>
-</head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-xl mx-auto">
-    <h1 class="text-3xl font-bold mb-4 text-center text-blue-700">Tra cứu mẫu code python "ăn liền"</h1>
-    <input id="search" type="text" placeholder="Tìm kiếm ví dụ..." onkeyup="searchSnippets()" class="w-full p-3 border border-gray-300 rounded mb-4 shadow">
-    <div id="results" class="space-y-2"></div>
-    <div id="suggestions" class="space-y-2 mt-6"></div>
-  </div>
+    function copyCode() {
+      const code = document.querySelector('#modal-code code').innerText;
+      navigator.clipboard.writeText(code).then(() => alert('✅ Đã copy!'));
+    }
 
-  <!-- Modal -->
-  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-10">
-    <div class="bg-white p-6 rounded-lg w-full max-w-2xl shadow-xl">
-      <h2 id="modal-title" class="text-2xl font-bold mb-2 text-blue-600"></h2>
-      <p id="modal-description" class="mb-4 text-gray-700"></p>
-      <div id="modal-code" class="bg-gray-100 p-4 rounded overflow-auto text-sm text-left"></div>
-      <div class="text-right mt-4">
-        <button onclick="closeModal()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Đóng</button>
-      </div>
-    </div>
-  </div>
+    function shuffle(arr) {
+      return arr.sort(() => Math.random() - 0.5);
+    }
+
+    function showSuggestions() {
+      const container = document.getElementById('suggestions');
+      const suggestions = shuffle([...codeSnippets]).slice(0, 5);
+      container.innerHTML = '<h2 class="text-xl font-semibold mb-2">📌 Gợi ý ngẫu nhiên</h2>';
+      suggestions.forEach(snippet => createResultButton(snippet, container));
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+    }
+
+    window.onload = () => {
+      renderTags();
+      showSuggestions();
+    }
+  </script>
 </body>
+
 </html>
